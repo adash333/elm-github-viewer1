@@ -4,6 +4,10 @@
 
 [基礎からわかる Elm](https://amzn.to/2YYLeMQ)
 
+## DEMO サイト
+
+https://modest-kalam-a2885a.netlify.com/
+
 ## インストール方法
 
 `git clone https://github.com/adash333/elm-github-viewer1.git`
@@ -38,5 +42,3 @@ elm-format 0.8.1
 elm-live 3.4.1
 elm-test 0.19.0-rev6
 ```
-
-作成中です。
