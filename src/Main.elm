@@ -92,7 +92,7 @@ update msg model =
                 | page =
                     case result of
                         Ok page ->
-                            Page
+                            page
                         Err e ->
                             -- 失敗したときはエラー用のページ
                             ErrorPage e
@@ -151,7 +151,7 @@ goTo maybeRoute model =
 type alias Repo =
     { name: String
     , description: String
-    , language: String
+    , language: Maybe String
     , owner: String
     , fork: Int
     , star: Int
@@ -196,4 +196,72 @@ issueDecoder =
 
 view : Model -> Browser.Document Msg
 view model =
+    { title = "My GitHub Viewer"
+    , body =
+        [ a [ href "/" ] [ h1 [] [text "My GitHub Viewer1"] ]
+        -- 場合分けしてページを表示
+        , case model.page of
+            NotFound ->
+                viewNotFound
+            ErrorPage error ->
+                viewError error
+            TopPage ->
+                viewTopPage
+            UserPage repos ->
+                viewUserPage repos
+            RepoPage issues ->
+                viewRepoPage issues
+        ]
+    }
 
+{- NotFound ページ -}
+viewNotFound : Html msg
+viewNotFound =
+    text "not found"
+
+{- エラーページ -}
+viewError : Http.Error -> Html msg
+viewError error =
+    case error of
+        Http.BadBody message ->
+            pre [] [ text message ]
+        _ ->
+            text (Debug.toString error)
+
+{- トップページ -}
+viewTopPage : Html msg
+viewTopPage =
+    ul []
+        -- ユーザ名一覧を表示
+        -- 今回は"elm"と"evancz"とします
+        [ viewLink (Url.Builder.absolute [ "elm" ] [])
+        , viewLink (Url.Builder.absolute [ "evancz" ] [])
+        ]
+
+viewUserPage : List Repo -> Html msg
+viewUserPage repos =
+    ul []
+        -- 各ユーザのリポジトリのURLを一覧で表示
+        (repos
+            |> List.map
+                (\repo ->
+                    viewLink (Url.Builder.absolute [ repo.owner, repo.name ] [])
+                )
+        )
+
+viewRepoPage : List Issue -> Html msg
+viewRepoPage issues =
+    -- 各リポジトリのIssue一覧を表示
+    ul [] (List.map viewIssue issues)
+
+viewIssue : Issue -> Html msg
+viewIssue issue =
+    li []
+        [ span [] [ text ("[" ++ issue.state ++ "]") ]
+        , span [] [ text ("#" ++ String.fromInt issue.number) ]
+        , span [] [ text issue.title ]
+        ]
+
+viewLink : String -> Html msg
+viewLink path =
+    li [] [ a [href path ] [text path ]]
