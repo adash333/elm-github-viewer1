@@ -26,12 +26,16 @@ main =
         , onUrlRequest = LinkClicked
         }
 
+
+
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.none
+
+
 
 -- MODEL
 
@@ -49,12 +53,14 @@ type Page
     | RepoPage (List Issue)
     | ErrorPage Http.Error
 
+
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     -- 後に画面遷移で使うためのキーを Model に持たせておく
     Model key TopPage
         -- はじめてページを訪れたときにページの初期化を行う
         |> goTo (Route.parse url)
+
 
 
 -- UPDATE
@@ -64,6 +70,7 @@ type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
     | Loaded (Result Http.Error Page)
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -76,6 +83,7 @@ update msg model =
                 -- (SPAなので実際に表示するページはindex.htmlのまま)
                 Browser.Internal url ->
                     ( model, Nav.pushUrl model.key (Url.toString url) )
+
                 -- 外部リンクなら通常の画面遷移を行う
                 Browser.External href ->
                     ( model, Nav.load href )
@@ -84,7 +92,7 @@ update msg model =
         UrlChanged url ->
             -- ページの初期化処理をヘルパー関数(goTo関数)に移譲
             goTo (Route.parse url) model
-        
+
         -- （３）HTTPリクエストが返ってきたとき（ページがロードされたとき）
         Loaded result ->
             -- Debug.todo "データが取得された後の挙動を実装する"
@@ -93,6 +101,7 @@ update msg model =
                     case result of
                         Ok page ->
                             page
+
                         Err e ->
                             -- 失敗したときはエラー用のページ
                             ErrorPage e
@@ -100,8 +109,12 @@ update msg model =
             , Cmd.none
             )
 
+
+
 {- パス（URL）に応じて各ページを初期化する -}
-goTo : Maybe Route -> Model -> ( Model, Cmd Msg ) 
+
+
+goTo : Maybe Route -> Model -> ( Model, Cmd Msg )
 goTo maybeRoute model =
     case maybeRoute of
         -- URLに該当するURLがなかった場合はNot Foundページ
@@ -119,7 +132,7 @@ goTo maybeRoute model =
             , Http.get
                 { url =
                     Url.Builder.crossOrigin "https://api.github.com"
-                        [ "users", userName, "repos"]
+                        [ "users", userName, "repos" ]
                         []
                 , expect =
                     Http.expectJson
@@ -128,6 +141,7 @@ goTo maybeRoute model =
                 }
             )
 
+
         -- Route.Repoだった場合
         Just (Route.Repo userName projectName) ->
             --Debug.todo "ページを初期化するためにデータを取得する"
@@ -135,7 +149,7 @@ goTo maybeRoute model =
             , Http.get
                 { url =
                     Url.Builder.crossOrigin "https://api.github.com"
-                        [ "repos", userName, projectName, "issues"]
+                        [ "repos", userName, projectName, "issues" ]
                         []
                 , expect =
                     Http.expectJson
@@ -145,29 +159,32 @@ goTo maybeRoute model =
             )
 
 
+
 -- GITHUB
 
 
 type alias Repo =
-    { name: String
-    , description: String
-    , language: Maybe String
-    , owner: String
-    , fork: Int
-    , star: Int
-    , watch: Int
+    { name : String
+    , description : String
+    , language : Maybe String
+    , owner : String
+    , fork : Int
+    , star : Int
+    , watch : Int
     }
 
 
 type alias Issue =
-    { number: Int
-    , title: String
-    , state: String
+    { number : Int
+    , title : String
+    , state : String
     }
+
 
 reposDecoder : Decoder (List Repo)
 reposDecoder =
     D.list repoDecoder
+
 
 repoDecoder : Decoder Repo
 repoDecoder =
@@ -180,9 +197,13 @@ repoDecoder =
         (D.field "stargazers_count" D.int)
         (D.field "watchers_count" D.int)
 
+
+
+
 issuesDecoder : Decoder (List Issue)
 issuesDecoder =
     D.list issueDecoder
+
 
 issueDecoder : Decoder Issue
 issueDecoder =
@@ -191,6 +212,8 @@ issueDecoder =
         (D.field "title" D.string)
         (D.field "state" D.string)
 
+
+
 -- VIEW
 
 
@@ -198,50 +221,92 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "My GitHub Viewer"
     , body =
-        [ a [ href "/" ] [ h1 [] [text "My GitHub Viewer1"] ]
+        [ section [ class "hero is-primary" ]
+            [ div [ class "hero-body" ]
+                [ div [ class "container" ]
+                    [ h1 [ class "title" ] [ text "My GitHub Viewer1" ]
+                    ]
+                ]
+            ]
+        , section [ class "section" ]
+            [ div [ class "container" ]
+                [ h1 [ class "title" ]
+                    [ a [ href "/" ] [ text "My GitHub Viewer1" ]
+                    ]
+                ]
+            ]
+
         -- 場合分けしてページを表示
-        , case model.page of
-            NotFound ->
-                viewNotFound
-            ErrorPage error ->
-                viewError error
-            TopPage ->
-                viewTopPage
-            UserPage repos ->
-                viewUserPage repos
-            RepoPage issues ->
-                viewRepoPage issues
+        , section [ class "section" ]
+            [ div [ class "container" ]
+                [ case model.page of
+                    NotFound ->
+                        viewNotFound
+
+                    ErrorPage error ->
+                        viewError error
+
+                    TopPage ->
+                        viewTopPage
+
+                    UserPage repos ->
+                        viewUserPage repos
+
+                    RepoPage issues ->
+                        viewRepoPage issues
+                ]
+            ]
+        , footer [ class "footer" ]
+            [ div [ class "content has-text-centered" ]
+                [ p []
+                    [ a [ href "http://i-doctor.sakura.ne.jp/font/?p=38434" ] [ text "WordPressでフリーオリジナルフォント2" ]
+                    ]
+                ]
+            ]
         ]
     }
 
+
+
 {- NotFound ページ -}
+
+
 viewNotFound : Html msg
 viewNotFound =
     text "not found"
 
+
+
 {- エラーページ -}
+
+
 viewError : Http.Error -> Html msg
 viewError error =
     case error of
         Http.BadBody message ->
             pre [] [ text message ]
+
         _ ->
             text (Debug.toString error)
 
+
+
 {- トップページ -}
+
+
 viewTopPage : Html msg
 viewTopPage =
     ul []
         -- ユーザ名一覧を表示
         -- 今回は"elm"と"evancz"とします
-        [ viewLink (Url.Builder.absolute [ "elm" ] [])
-        , viewLink (Url.Builder.absolute [ "evancz" ] [])
+        [ viewLink (Url.Builder.absolute [ "ionic-team" ] [])
+        , viewLink (Url.Builder.absolute [ "elm" ] [])
         ]
+
 
 viewUserPage : List Repo -> Html msg
 viewUserPage repos =
     ul []
-        -- 各ユーザのリポジトリのURLを一覧で表示
         (repos
             |> List.map
                 (\repo ->
@@ -249,10 +314,12 @@ viewUserPage repos =
                 )
         )
 
+
 viewRepoPage : List Issue -> Html msg
 viewRepoPage issues =
     -- 各リポジトリのIssue一覧を表示
     ul [] (List.map viewIssue issues)
+
 
 viewIssue : Issue -> Html msg
 viewIssue issue =
@@ -262,6 +329,7 @@ viewIssue issue =
         , span [] [ text issue.title ]
         ]
 
+
 viewLink : String -> Html msg
 viewLink path =
-    li [] [ a [href path ] [text path ]]
+    li [] [ a [ href path ] [ text path ] ]
