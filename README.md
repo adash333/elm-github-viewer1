@@ -20,7 +20,7 @@ Run `elm install elm/url` to install all dependencies.
 
 Run `npm install elm-live`
 
-Run `elm-live src/Main.elm --pushstate -- --output=elm.js` to start the development environment.
+Run `elm-live src/Main.elm --open -- --output=main.js` to start the development environment.
 
 作成経過は以下に記載しています。
 
