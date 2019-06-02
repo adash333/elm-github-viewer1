@@ -165,7 +165,7 @@ goTo maybeRoute model =
 
 type alias Repo =
     { name : String
-    , description : String
+    , description : Maybe String
     , language : Maybe String
     , owner : String
     , fork : Int
@@ -190,7 +190,7 @@ repoDecoder : Decoder Repo
 repoDecoder =
     D.map7 Repo
         (D.field "name" D.string)
-        (D.field "description" D.string)
+        (D.maybe (D.field "description" D.string))
         (D.maybe (D.field "language" D.string))
         (D.at [ "owner", "login" ] D.string)
         (D.field "forks_count" D.int)
@@ -231,7 +231,7 @@ view model =
         , section [ class "section" ]
             [ div [ class "container" ]
                 [ h1 [ class "title" ]
-                    [ a [ href "/" ] [ text "My GitHub Viewer1" ]
+                    [ a [ href "/" ] [ text "Go To TopPage" ]
                     ]
                 ]
             ]
@@ -287,7 +287,8 @@ viewError error =
             pre [] [ text message ]
 
         _ ->
-            text (Debug.toString error)
+            -- text (Debug.toString error)
+            pre [] [ text "error" ]
 
 
 
@@ -299,8 +300,8 @@ viewTopPage =
     ul []
         -- ユーザ名一覧を表示
         -- 今回は"elm"と"evancz"とします
-        [ viewLink (Url.Builder.absolute [ "ionic-team" ] [])
-        , viewLink (Url.Builder.absolute [ "elm" ] [])
+        [ viewLink (Url.Builder.absolute [ "elm" ] [])
+        , viewLink (Url.Builder.absolute [ "evancz" ] [])
         ]
 
 
