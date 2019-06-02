@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+
 import Browser
 import Browser.Navigation as Nav
 import Html exposing (..)
@@ -9,7 +10,7 @@ import Json.Decode as D exposing (Decoder)
 import Route exposing (Route)
 import Url
 import Url.Builder
-
+import GitHub exposing (Issue, Repo)
 
 
 -- MAIN
@@ -129,16 +130,9 @@ goTo maybeRoute model =
         Just (Route.User userName) ->
             -- Debug.todo "ページを初期化するためにデータを取得する"
             ( model
-            , Http.get
-                { url =
-                    Url.Builder.crossOrigin "https://api.github.com"
-                        [ "users", userName, "repos" ]
-                        []
-                , expect =
-                    Http.expectJson
-                        (Result.map UserPage >> Loaded)
-                        reposDecoder
-                }
+            , GitHub.getRepos
+                (Result.map UserPage >> Loaded)
+                userName
             )
 
 
@@ -146,16 +140,10 @@ goTo maybeRoute model =
         Just (Route.Repo userName projectName) ->
             --Debug.todo "ページを初期化するためにデータを取得する"
             ( model
-            , Http.get
-                { url =
-                    Url.Builder.crossOrigin "https://api.github.com"
-                        [ "repos", userName, projectName, "issues" ]
-                        []
-                , expect =
-                    Http.expectJson
-                        (Result.map RepoPage >> Loaded)
-                        issuesDecoder
-                }
+            , GitHub.getIssues
+                (Result.map RepoPage >> Loaded)
+                userName
+                projectName
             )
 
 
