@@ -1,19 +1,28 @@
 module Example exposing (..)
 
-import Expect exposing (Expectation)
-import Fuzz exposing (Fuzzer, int, list, string)
-import Test exposing (..)
+import Expect exposing (..)
+import Fuzz exposing (..)
 import Route exposing (Route)
+import Test exposing (..)
 import Url
+
+
+testParse : String -> String -> Maybe Route -> Test
+testParse name path expectedRoute =
+    test name <|
+        \_ ->
+            Url.fromString ("http://example.com" ++ path)
+                |> Maybe.andThen Route.parse
+                |> Expect.equal expectedRoute
 
 
 suite : Test
 suite =
     describe "Route"
-        [ test "should parse URL" <|
-            \_ ->
-                Url.fromString "http://example.com/" --Url 型の値を作る
-                    |> Maybe.andThen Route.parse     --パースする
-                    |> Expect.equal (Just Route.Top) --Topになっていることを確かめる
-
+        [ testParse "should parse Top" "/" (Just Route.Top)
+        , testParse "should parse Top with queries" "/?dummy=value" (Just Route.Top)
+        , testParse "should parse Top with hash" "/#dummy" (Just Route.Top)
+        , testParse "should parse User" "/foo" (Just (Route.User "foo"))
+        , testParse "should parse Repo" "/foo/bar" (Just (Route.Repo "foo" "bar"))
+        , testParse "should parse invalid path" "/foo/bar/baz" Nothing
         ]

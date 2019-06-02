@@ -12,4 +12,12 @@ type Route
 
 parse : Url -> Maybe Route
 parse url =
-    Just Top
+    Url.Parser.parse parser url
+
+parser : Parser (Route -> a) a
+parser =
+    oneOf
+        [ map Top top
+        , map User string
+        , map Repo (string </> string)
+        ]
